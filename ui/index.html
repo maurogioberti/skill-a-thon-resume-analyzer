@@ -327,9 +327,48 @@
       }
 
       .results {
+        position: relative;
         display: grid;
         gap: 16px;
         padding: 22px;
+        transition: opacity 180ms ease, transform 180ms ease, filter 180ms ease;
+      }
+
+      .results.is-loading {
+        opacity: 0.62;
+        filter: saturate(0.9);
+      }
+
+      .results-overlay {
+        position: absolute;
+        inset: 0;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 24px;
+        pointer-events: none;
+      }
+
+      .results-loader {
+        display: inline-flex;
+        align-items: center;
+        gap: 12px;
+        padding: 12px 16px;
+        border-radius: 999px;
+        background: rgba(255, 252, 246, 0.96);
+        border: 1px solid rgba(115, 89, 67, 0.12);
+        box-shadow: 0 12px 28px rgba(74, 46, 25, 0.12);
+        color: var(--text);
+        font-weight: 700;
+      }
+
+      .spinner {
+        width: 18px;
+        height: 18px;
+        border-radius: 50%;
+        border: 2px solid rgba(196, 77, 36, 0.18);
+        border-top-color: var(--accent);
+        animation: spin 0.9s linear infinite;
       }
 
       .results-grid {
@@ -437,6 +476,12 @@
         }
       }
 
+      @keyframes spin {
+        to {
+          transform: rotate(360deg);
+        }
+      }
+
       @media (max-width: 760px) {
         .page {
           width: min(100vw - 20px, 1160px);
@@ -539,7 +584,6 @@ Product-minded AI engineer focused on resume intelligence, workflow automation, 
 
             setResult(data);
           } catch (err) {
-            setResult(null);
             setError(err.message || "Request failed.");
           } finally {
             setLoading(false);
@@ -668,7 +712,7 @@ Product-minded AI engineer focused on resume intelligence, workflow automation, 
             </section>
 
             {result ? (
-              <section className="panel results">
+              <section className={`panel results ${loading ? "is-loading" : ""}`} aria-busy={loading}>
                 <div className="results-header">
                   <div>
                     <h2 className="panel-title">Candidate Snapshot</h2>
@@ -733,6 +777,15 @@ Product-minded AI engineer focused on resume intelligence, workflow automation, 
                   <p className="label">Summary</p>
                   <p className="value">{result.summary || "Professional summary unavailable."}</p>
                 </article>
+
+                {loading ? (
+                  <div className="results-overlay">
+                    <div className="results-loader">
+                      <span className="spinner"></span>
+                      Refreshing candidate snapshot...
+                    </div>
+                  </div>
+                ) : null}
               </section>
             ) : null}
           </main>

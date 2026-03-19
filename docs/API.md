@@ -22,9 +22,9 @@ Response shape:
 
 ```json
 {
-  "candidate": "Maya Chen",
+  "candidate": "John Doe",
   "parsed_resume": {
-    "candidate_name": "Maya Chen",
+    "candidate_name": "John Doe",
     "skills": ["Python", "LLM Engineering", "Prompt Design"],
     "work_experience": ["Senior AI Engineer at OpenAI (2023-Present)"],
     "companies": ["OpenAI"]
@@ -42,7 +42,7 @@ Response shape:
     "top_skills": ["Python", "LLM Engineering", "Prompt Design"],
     "raw_analysis": {}
   },
-  "summary": "Maya Chen brings strengths in Python, LLM Engineering, Prompt Design."
+  "summary": "John Doe brings strengths in Python, LLM Engineering, Prompt Design."
 }
 ```
 

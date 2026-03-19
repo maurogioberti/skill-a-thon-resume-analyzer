@@ -1,0 +1,467 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Resume-Skills MVP</title>
+    <script crossorigin src="https://unpkg.com/react@18/umd/react.development.js"></script>
+    <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+    <style>
+      :root {
+        --bg: #f4efe6;
+        --panel: rgba(255, 250, 243, 0.9);
+        --panel-strong: #fffaf3;
+        --border: rgba(88, 62, 43, 0.18);
+        --text: #22170f;
+        --muted: #725d4b;
+        --accent: #d4572b;
+        --accent-soft: #f7d3bf;
+        --success: #1f7a5a;
+        --shadow: 0 24px 60px rgba(82, 51, 28, 0.14);
+      }
+
+      * {
+        box-sizing: border-box;
+      }
+
+      body {
+        margin: 0;
+        min-height: 100vh;
+        color: var(--text);
+        font-family: "Avenir Next", "Segoe UI", sans-serif;
+        background:
+          radial-gradient(circle at top left, rgba(251, 210, 168, 0.7), transparent 32%),
+          radial-gradient(circle at bottom right, rgba(212, 87, 43, 0.12), transparent 30%),
+          linear-gradient(180deg, #f9f5ee 0%, var(--bg) 100%);
+      }
+
+      .page {
+        width: min(1160px, calc(100vw - 32px));
+        margin: 0 auto;
+        padding: 40px 0 56px;
+      }
+
+      .hero {
+        display: grid;
+        gap: 18px;
+        margin-bottom: 24px;
+      }
+
+      .eyebrow {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        width: fit-content;
+        padding: 8px 12px;
+        border-radius: 999px;
+        background: rgba(255, 255, 255, 0.58);
+        border: 1px solid var(--border);
+        color: var(--muted);
+        font-size: 0.8rem;
+        text-transform: uppercase;
+        letter-spacing: 0.12em;
+      }
+
+      h1,
+      h2 {
+        font-family: "Iowan Old Style", "Palatino Linotype", serif;
+      }
+
+      h1 {
+        margin: 0;
+        max-width: 10ch;
+        font-size: clamp(3rem, 9vw, 5.5rem);
+        line-height: 0.92;
+        letter-spacing: -0.05em;
+      }
+
+      .subtitle {
+        max-width: 56ch;
+        margin: 0;
+        color: var(--muted);
+        font-size: 1.05rem;
+        line-height: 1.6;
+      }
+
+      .layout {
+        display: grid;
+        gap: 18px;
+      }
+
+      .panel {
+        backdrop-filter: blur(12px);
+        background: var(--panel);
+        border: 1px solid var(--border);
+        border-radius: 28px;
+        box-shadow: var(--shadow);
+      }
+
+      .composer {
+        display: grid;
+        gap: 18px;
+        padding: 20px;
+      }
+
+      .composer-header,
+      .results-header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 16px;
+      }
+
+      .panel-title {
+        margin: 0;
+        font-size: 1.15rem;
+      }
+
+      .panel-copy {
+        margin: 6px 0 0;
+        color: var(--muted);
+      }
+
+      .status-pill {
+        padding: 8px 12px;
+        border-radius: 999px;
+        background: var(--accent-soft);
+        color: #8e3e20;
+        font-size: 0.9rem;
+        font-weight: 700;
+      }
+
+      textarea {
+        width: 100%;
+        min-height: 320px;
+        resize: vertical;
+        border: 1px solid rgba(115, 89, 67, 0.18);
+        border-radius: 20px;
+        padding: 18px;
+        background: rgba(255, 255, 255, 0.92);
+        color: var(--text);
+        font: inherit;
+        line-height: 1.6;
+      }
+
+      .actions {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 12px;
+      }
+
+      button {
+        border: 0;
+        border-radius: 999px;
+        padding: 13px 18px;
+        font: inherit;
+        font-weight: 700;
+        cursor: pointer;
+        transition: transform 140ms ease, opacity 140ms ease;
+      }
+
+      button:hover {
+        transform: translateY(-1px);
+      }
+
+      button:disabled {
+        opacity: 0.7;
+        cursor: wait;
+        transform: none;
+      }
+
+      .primary {
+        background: var(--accent);
+        color: white;
+      }
+
+      .secondary {
+        background: white;
+        color: var(--text);
+        border: 1px solid var(--border);
+      }
+
+      .message {
+        margin: 0;
+        color: var(--muted);
+      }
+
+      .error {
+        color: #a03434;
+      }
+
+      .results {
+        display: grid;
+        gap: 16px;
+        padding: 20px;
+      }
+
+      .results-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+        gap: 14px;
+      }
+
+      .card {
+        padding: 16px;
+        border-radius: 22px;
+        background: var(--panel-strong);
+        border: 1px solid rgba(115, 89, 67, 0.12);
+      }
+
+      .label {
+        margin: 0 0 8px;
+        color: var(--muted);
+        font-size: 0.78rem;
+        font-weight: 700;
+        letter-spacing: 0.1em;
+        text-transform: uppercase;
+      }
+
+      .value {
+        margin: 0;
+        font-size: 1.05rem;
+        line-height: 1.5;
+      }
+
+      .chips {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px;
+      }
+
+      .chip {
+        padding: 8px 12px;
+        border-radius: 999px;
+        background: #f5e3d7;
+        color: #7c4327;
+        font-weight: 700;
+      }
+
+      .companies {
+        display: grid;
+        gap: 12px;
+      }
+
+      .company {
+        padding: 14px 16px;
+        border-radius: 18px;
+        background: #fff;
+        border: 1px solid rgba(115, 89, 67, 0.12);
+      }
+
+      .company-name {
+        margin: 0 0 4px;
+        font-size: 1rem;
+      }
+
+      .company-meta,
+      .company-description {
+        margin: 0;
+        color: var(--muted);
+        line-height: 1.5;
+      }
+
+      .summary {
+        padding: 18px;
+        border-radius: 22px;
+        background: linear-gradient(135deg, rgba(255, 244, 236, 0.95), rgba(255, 255, 255, 0.95));
+        border: 1px solid rgba(212, 87, 43, 0.14);
+      }
+
+      .footer-note {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        color: var(--success);
+        font-size: 0.92rem;
+        font-weight: 700;
+      }
+
+      @media (max-width: 760px) {
+        .page {
+          width: min(100vw - 20px, 1160px);
+          padding-top: 22px;
+        }
+
+        .composer-header,
+        .results-header {
+          flex-direction: column;
+          align-items: flex-start;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div id="root"></div>
+
+    <script type="text/babel">
+      const sampleResume = `# Maya Chen
+
+## Headline
+Product-minded AI engineer focused on resume intelligence, workflow automation, and demo-friendly user experiences.
+
+## Skills
+- Python
+- LLM Engineering
+- Prompt Design
+- FastAPI
+- React
+- Data Analysis
+- API Design
+
+## Work Experience
+- Senior AI Engineer at OpenAI (2023-Present)
+- Machine Learning Engineer at BrightPath Health (2021-2023)
+- Data Analyst at Acme Analytics (2018-2021)`;
+
+      function App() {
+        const [resumeText, setResumeText] = React.useState(sampleResume);
+        const [result, setResult] = React.useState(null);
+        const [error, setError] = React.useState("");
+        const [loading, setLoading] = React.useState(false);
+
+        async function handleAnalyze() {
+          setLoading(true);
+          setError("");
+
+          try {
+            const response = await fetch("/analyze", {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({ resume: resumeText }),
+            });
+
+            const data = await response.json();
+            if (!response.ok) {
+              throw new Error(data.detail || data.error || "Something went wrong.");
+            }
+
+            setResult(data);
+          } catch (err) {
+            setResult(null);
+            setError(err.message || "Request failed.");
+          } finally {
+            setLoading(false);
+          }
+        }
+
+        function handleReset() {
+          setResumeText(sampleResume);
+          setError("");
+        }
+
+        return (
+          <main className="page">
+            <header className="hero">
+              <div className="eyebrow">Hackathon MVP • Reusable AI skills</div>
+              <div>
+                <h1>Resume analysis that stays demo-ready.</h1>
+                <p className="subtitle">
+                  Paste a markdown resume, run the skill pipeline, and get a fast candidate
+                  snapshot with graceful fallback behavior when local models are offline.
+                </p>
+              </div>
+            </header>
+
+            <section className="panel composer">
+              <div className="composer-header">
+                <div>
+                  <h2 className="panel-title">Resume Input</h2>
+                  <p className="panel-copy">Markdown-first, but tolerant of pasted plain text.</p>
+                </div>
+                <div className="status-pill">{loading ? "Running pipeline..." : "Ready to analyze"}</div>
+              </div>
+
+              <textarea
+                value={resumeText}
+                onChange={(event) => setResumeText(event.target.value)}
+                placeholder="Paste resume markdown or plain text here"
+              />
+
+              <div className="actions">
+                <button className="primary" onClick={handleAnalyze} disabled={loading}>
+                  {loading ? "Analyzing..." : "Analyze Resume"}
+                </button>
+                <button className="secondary" onClick={handleReset} disabled={loading}>
+                  Restore Sample
+                </button>
+              </div>
+
+              <p className={`message ${error ? "error" : ""}`}>
+                {error || "The API response is rendered directly from the same agent output used by the CLI demo."}
+              </p>
+            </section>
+
+            {result ? (
+              <section className="panel results">
+                <div className="results-header">
+                  <div>
+                    <h2 className="panel-title">Candidate Snapshot</h2>
+                    <p className="panel-copy">Same JSON shape as the backend response.</p>
+                  </div>
+                  <div className="footer-note">Fallback-safe output even without Ollama</div>
+                </div>
+
+                <div className="results-grid">
+                  <article className="card">
+                    <p className="label">Candidate</p>
+                    <p className="value">{result.candidate || "Unknown Candidate"}</p>
+                  </article>
+
+                  <article className="card">
+                    <p className="label">Level</p>
+                    <p className="value">{result.analysis?.seniority || "Unknown"}</p>
+                  </article>
+
+                  <article className="card">
+                    <p className="label">Specialization</p>
+                    <p className="value">{result.analysis?.specialization || "Generalist"}</p>
+                  </article>
+                </div>
+
+                <article className="card">
+                  <p className="label">Top Skills</p>
+                  {(result.analysis?.top_skills || []).length ? (
+                    <div className="chips">
+                      {result.analysis.top_skills.map((skill) => (
+                        <span className="chip" key={skill}>
+                          {skill}
+                        </span>
+                      ))}
+                    </div>
+                  ) : (
+                    <p className="value">None identified</p>
+                  )}
+                </article>
+
+                <article className="card">
+                  <p className="label">Companies</p>
+                  {(result.company_enrichment || []).length ? (
+                    <div className="companies">
+                      {result.company_enrichment.map((company) => (
+                        <div className="company" key={company.company}>
+                          <h3 className="company-name">{company.company}</h3>
+                          <p className="company-meta">{company.industry}</p>
+                          <p className="company-description">{company.description}</p>
+                        </div>
+                      ))}
+                    </div>
+                  ) : (
+                    <p className="value">No companies found</p>
+                  )}
+                </article>
+
+                <article className="summary">
+                  <p className="label">Summary</p>
+                  <p className="value">{result.summary || "Professional summary unavailable."}</p>
+                </article>
+              </section>
+            ) : null}
+          </main>
+        );
+      }
+
+      ReactDOM.createRoot(document.getElementById("root")).render(<App />);
+    </script>
+  </body>
+</html>

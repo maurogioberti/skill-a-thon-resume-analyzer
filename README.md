@@ -2,6 +2,12 @@
 
 This repo is a hackathon-friendly MVP that analyzes a resume using small reusable AI skills.
 
+## Install
+
+```bash
+pip install git+https://github.com/maurogioberti/skill-a-thon-resume-analyzer.git
+```
+
 ## What it does
 
 The app runs a simple pipeline:

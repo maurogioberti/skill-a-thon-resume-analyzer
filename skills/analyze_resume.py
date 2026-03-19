@@ -11,8 +11,11 @@ from typing import Any
 from urllib import error, request
 
 
-OLLAMA_URL = "http://localhost:11434/api/generate"
-DEFAULT_MODEL = "llama3.2"
+OLLAMA_HOST = "http://127.0.0.1:11434"
+OLLAMA_URL = "http://127.0.0.1:11434/api/generate"
+OLLAMA_TAGS_URL = "http://127.0.0.1:11434/api/tags"
+DEFAULT_MODEL = "llama3:8b"
+PREFERRED_MODELS = (DEFAULT_MODEL, "llama3.2", "llama3")
 
 SPECIALIZATION_MAP = {
     "llm": "LLM Engineer",
@@ -79,6 +82,55 @@ def _fallback_analysis(parsed_resume: dict[str, Any]) -> dict[str, Any]:
     }
 
 
+def resolve_ollama_model(preferred_model: str = DEFAULT_MODEL) -> str:
+    try:
+        with request.urlopen(OLLAMA_TAGS_URL, timeout=5) as response:
+            body = json.loads(response.read().decode("utf-8"))
+    except (error.URLError, TimeoutError, json.JSONDecodeError, KeyError, ValueError) as exc:
+        print(f"[resolve_ollama_model] Could not reach Ollama tags endpoint: {type(exc).__name__}: {exc}")
+        return preferred_model
+
+    model_names = [model.get("name", "").strip() for model in body.get("models", []) if model.get("name")]
+    if not model_names:
+        return preferred_model
+
+    if preferred_model in model_names:
+        return preferred_model
+
+    for candidate in PREFERRED_MODELS:
+        if candidate in model_names:
+            return candidate
+
+    return model_names[0]
+
+
+def ollama_generate(
+    prompt: str,
+    model: str = DEFAULT_MODEL,
+    *,
+    timeout: int = 30,
+    response_format: str | None = None,
+) -> dict[str, Any]:
+    resolved_model = resolve_ollama_model(model)
+    print(f"[ollama_generate] Using model: {resolved_model}")
+    payload_dict: dict[str, Any] = {
+        "model": resolved_model,
+        "prompt": prompt,
+        "stream": False,
+    }
+    if response_format:
+        payload_dict["format"] = response_format
+
+    payload = json.dumps(payload_dict).encode("utf-8")
+    req = request.Request(OLLAMA_URL, data=payload, headers={"Content-Type": "application/json"})
+
+    with request.urlopen(req, timeout=timeout) as response:
+        body = json.loads(response.read().decode("utf-8"))
+
+    body["_resolved_model"] = resolved_model
+    return body
+
+
 def analyze_resume(parsed_resume: dict[str, Any], model: str = DEFAULT_MODEL) -> dict[str, Any]:
     prompt = (
         "You are a resume analysis assistant. "
@@ -87,28 +139,19 @@ def analyze_resume(parsed_resume: dict[str, Any], model: str = DEFAULT_MODEL) ->
         f"Candidate Profile:\n{json.dumps(parsed_resume, indent=2)}"
     )
 
-    payload = json.dumps(
-        {
-            "model": model,
-            "prompt": prompt,
-            "stream": False,
-            "format": "json",
-        }
-    ).encode("utf-8")
-
-    req = request.Request(OLLAMA_URL, data=payload, headers={"Content-Type": "application/json"})
-
     try:
-        with request.urlopen(req, timeout=20) as response:
-            body = json.loads(response.read().decode("utf-8"))
-
+        body = ollama_generate(prompt, model=model, timeout=30, response_format="json")
         llm_json = json.loads(body.get("response", "{}"))
         fallback = _fallback_analysis(parsed_resume)
         return {
             "seniority": llm_json.get("seniority", fallback["seniority"]),
             "specialization": llm_json.get("specialization", fallback["specialization"]),
             "top_skills": llm_json.get("top_skills", fallback["top_skills"]),
-            "raw_analysis": llm_json,
+            "raw_analysis": {
+                **llm_json,
+                "_resolved_model": body.get("_resolved_model", model),
+            },
         }
-    except (error.URLError, TimeoutError, json.JSONDecodeError, KeyError, ValueError):
+    except (error.URLError, TimeoutError, json.JSONDecodeError, KeyError, ValueError) as exc:
+        print(f"[analyze_resume] Ollama call failed, using fallback: {type(exc).__name__}: {exc}")
         return _fallback_analysis(parsed_resume)

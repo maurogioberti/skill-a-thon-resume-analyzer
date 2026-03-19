@@ -180,6 +180,60 @@
         box-shadow: var(--shadow);
       }
 
+      .info-grid {
+        display: grid;
+        grid-template-columns: 1.2fr 0.8fr;
+        gap: 18px;
+        margin-bottom: 18px;
+      }
+
+      .info-panel {
+        display: grid;
+        gap: 16px;
+        padding: 22px;
+      }
+
+      .skills-grid {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 12px;
+      }
+
+      .skill-card {
+        padding: 16px;
+        border-radius: 22px;
+        background: var(--panel-strong);
+        border: 1px solid rgba(115, 89, 67, 0.12);
+      }
+
+      .skill-step {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        width: 32px;
+        height: 32px;
+        border-radius: 50%;
+        background: linear-gradient(135deg, #db5d30, var(--accent));
+        color: white;
+        font-weight: 800;
+      }
+
+      .skill-name {
+        margin: 12px 0 6px;
+        font-size: 1rem;
+      }
+
+      .skill-copy,
+      .how-list {
+        margin: 0;
+        color: var(--muted);
+        line-height: 1.6;
+      }
+
+      .how-list {
+        padding-left: 18px;
+      }
+
       .composer {
         display: grid;
         gap: 18px;
@@ -389,7 +443,12 @@
           padding-top: 22px;
         }
 
+        .info-grid,
         .hero-grid {
+          grid-template-columns: 1fr;
+        }
+
+        .skills-grid {
           grid-template-columns: 1fr;
         }
 
@@ -556,6 +615,56 @@ Product-minded AI engineer focused on resume intelligence, workflow automation, 
               <p className={`message ${error ? "error" : ""}`}>
                 {error || "The API response is rendered directly from the same agent output used by the CLI demo."}
               </p>
+            </section>
+
+            <section className="info-grid">
+              <section className="panel info-panel">
+                <div>
+                  <h2 className="panel-title">What the skills do</h2>
+                  <p className="panel-copy">The agent is built from four small reusable skills that run in order.</p>
+                </div>
+
+                <div className="skills-grid">
+                  <article className="skill-card">
+                    <span className="skill-step">1</span>
+                    <h3 className="skill-name">parse_resume</h3>
+                    <p className="skill-copy">Reads the raw resume text and extracts name, skills, work experience, and companies.</p>
+                  </article>
+
+                  <article className="skill-card">
+                    <span className="skill-step">2</span>
+                    <h3 className="skill-name">enrich_company</h3>
+                    <p className="skill-copy">Looks up each company and adds local metadata like industry and a short description.</p>
+                  </article>
+
+                  <article className="skill-card">
+                    <span className="skill-step">3</span>
+                    <h3 className="skill-name">analyze_resume</h3>
+                    <p className="skill-copy">Asks Ollama for seniority, specialization, and top skills, or falls back if Ollama is unavailable.</p>
+                  </article>
+
+                  <article className="skill-card">
+                    <span className="skill-step">4</span>
+                    <h3 className="skill-name">summarize_candidate</h3>
+                    <p className="skill-copy">Generates a short candidate story that is easy to present during the hackathon demo.</p>
+                  </article>
+                </div>
+              </section>
+
+              <section className="panel info-panel">
+                <div>
+                  <h2 className="panel-title">How to use it</h2>
+                  <p className="panel-copy">This page is meant to be demo-friendly, so the flow stays simple.</p>
+                </div>
+
+                <ol className="how-list">
+                  <li>Paste a resume in markdown or plain text into the input box.</li>
+                  <li>Click <strong>Analyze Resume</strong>.</li>
+                  <li>Let the agent run the four skills in sequence.</li>
+                  <li>Review the candidate snapshot, top skills, companies, and summary.</li>
+                  <li>Swap the text and run it again for another candidate.</li>
+                </ol>
+              </section>
             </section>
 
             {result ? (

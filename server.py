@@ -12,7 +12,7 @@ from fastapi.responses import FileResponse
 from pydantic import BaseModel
 
 from agent import run_resume_agent
-from skills.analyze_resume import DEFAULT_MODEL, OLLAMA_URL
+from skills.analyze_resume import DEFAULT_MODEL, OLLAMA_URL, ollama_generate
 
 
 app = FastAPI(title="Resume Skills MVP")
@@ -32,22 +32,13 @@ def _generate_hackathon_welcome(model: str = DEFAULT_MODEL) -> str:
         "Write exactly one sentence to welcome people to a resume analysis hackathon demo. "
         "Keep it upbeat, concise, and suitable for a landing page hero."
     )
-    payload = json.dumps(
-        {
-            "model": model,
-            "prompt": prompt,
-            "stream": False,
-        }
-    ).encode("utf-8")
-
-    req = request.Request(OLLAMA_URL, data=payload, headers={"Content-Type": "application/json"})
 
     try:
-        with request.urlopen(req, timeout=10) as response:
-            body = json.loads(response.read().decode("utf-8"))
+        body = ollama_generate(prompt, model=model, timeout=10)
         welcome_text = body.get("response", "").strip()
         return welcome_text or _fallback_welcome()
-    except (error.URLError, TimeoutError, json.JSONDecodeError, KeyError, ValueError):
+    except (error.URLError, TimeoutError, json.JSONDecodeError, KeyError, ValueError) as exc:
+        print(f"[welcome] Ollama call failed, using fallback: {type(exc).__name__}: {exc}")
         return _fallback_welcome()
 
 

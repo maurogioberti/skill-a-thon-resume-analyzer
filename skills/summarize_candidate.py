@@ -9,7 +9,7 @@ import json
 from typing import Any
 from urllib import error, request
 
-from skills.analyze_resume import DEFAULT_MODEL, OLLAMA_URL
+from skills.analyze_resume import DEFAULT_MODEL, ollama_generate
 
 
 def _fallback_summary(parsed_resume: dict[str, Any]) -> str:
@@ -35,21 +35,10 @@ def summarize_candidate(parsed_resume: dict[str, Any], model: str = DEFAULT_MODE
         f"Candidate Profile:\n{json.dumps(parsed_resume, indent=2)}"
     )
 
-    payload = json.dumps(
-        {
-            "model": model,
-            "prompt": prompt,
-            "stream": False,
-        }
-    ).encode("utf-8")
-
-    req = request.Request(OLLAMA_URL, data=payload, headers={"Content-Type": "application/json"})
-
     try:
-        with request.urlopen(req, timeout=20) as response:
-            body = json.loads(response.read().decode("utf-8"))
-
+        body = ollama_generate(prompt, model=model, timeout=30)
         summary = body.get("response", "").strip()
         return summary or _fallback_summary(parsed_resume)
-    except (error.URLError, TimeoutError, json.JSONDecodeError, KeyError, ValueError):
+    except (error.URLError, TimeoutError, json.JSONDecodeError, KeyError, ValueError) as exc:
+        print(f"[summarize_candidate] Ollama call failed, using fallback: {type(exc).__name__}: {exc}")
         return _fallback_summary(parsed_resume)

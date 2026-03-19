@@ -137,11 +137,29 @@
         color: rgba(255, 244, 234, 0.72);
       }
 
+      .hero-note-header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 12px;
+      }
+
       .hero-note-text {
         margin: 0;
         font-family: "Iowan Old Style", "Palatino Linotype", serif;
         font-size: 1.28rem;
         line-height: 1.45;
+      }
+
+      .welcome-button {
+        border: 1px solid rgba(255, 244, 234, 0.2);
+        background: rgba(255, 255, 255, 0.08);
+        color: #fff4ea;
+        padding: 9px 12px;
+      }
+
+      .welcome-button:hover {
+        background: rgba(255, 255, 255, 0.14);
       }
 
       .hero-meta {
@@ -538,11 +556,18 @@ Product-minded AI engineer focused on resume intelligence, workflow automation, 
         const [error, setError] = React.useState("");
         const [loading, setLoading] = React.useState(false);
         const [welcomeText, setWelcomeText] = React.useState("Loading today's welcome from Ollama...");
+        const [welcomeLoading, setWelcomeLoading] = React.useState(false);
+
+        const loadWelcome = React.useRef(null);
 
         React.useEffect(() => {
           let alive = true;
 
-          async function loadWelcome() {
+          loadWelcome.current = async function loadWelcomeMessage() {
+            if (alive) {
+              setWelcomeLoading(true);
+            }
+
             try {
               const response = await fetch("/welcome");
               const data = await response.json();
@@ -556,10 +581,14 @@ Product-minded AI engineer focused on resume intelligence, workflow automation, 
               if (alive) {
                 setWelcomeText("Welcome to the hackathon demo. Paste a resume and let the agent build a polished candidate story.");
               }
+            } finally {
+              if (alive) {
+                setWelcomeLoading(false);
+              }
             }
-          }
+          };
 
-          loadWelcome();
+          loadWelcome.current();
 
           return () => {
             alive = false;
@@ -595,6 +624,12 @@ Product-minded AI engineer focused on resume intelligence, workflow automation, 
           setError("");
         }
 
+        function handleWelcomeReload() {
+          if (loadWelcome.current) {
+            loadWelcome.current();
+          }
+        }
+
         return (
           <main className="page">
             <header className="hero">
@@ -610,7 +645,17 @@ Product-minded AI engineer focused on resume intelligence, workflow automation, 
                   </div>
 
                   <aside className="hero-note">
-                    <p className="hero-note-label">Welcome Message</p>
+                    <div className="hero-note-header">
+                      <p className="hero-note-label">Welcome Message</p>
+                      <button
+                        className="welcome-button"
+                        type="button"
+                        onClick={handleWelcomeReload}
+                        disabled={welcomeLoading}
+                      >
+                        {welcomeLoading ? "Refreshing..." : "Reload"}
+                      </button>
+                    </div>
                     <p className="hero-note-text">{welcomeText}</p>
                   </aside>
                 </div>
